@@ -1,0 +1,19 @@
+{
+	"name": "TypeScript + Google Cloud",
+	// TypeScript対応のベースイメージ
+	"image": "mcr.microsoft.com/devcontainers/typescript-node:20",
+	// 独自Feature（wrangler）を指定
+	"features": {
+        "ghcr.io/dhoeric/features/google-cloud-cli:1": {}
+	},
+	// Astroのデフォルトポートをフォワード
+	"forwardPorts": [8080],
+	// 環境変数の設定
+	"runArgs": ["--env-file", ".devcontainer/devcontainer.env"],
+	// 拡張機能や設定のカスタマイズ
+	"customizations": {
+		"vscode": {
+			"extensions": ["biomejs.biome"]
+		}
+	}
+}
