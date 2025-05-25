@@ -60,5 +60,8 @@ steps:
       - '8080'
     id: 'deploy to cloud run'
 
+options:
+  logging: CLOUD_LOGGING_ONLY # この行を追加
+
 images:
   - 'asia-northeast1-docker.pkg.dev/${PROJECT_ID}/super-duper-mart-repo/super-duper-mart-app:latest'
