@@ -2,4 +2,5 @@
 *.env
 *credentials.json
 
+.pnpm-store
 node_modules
