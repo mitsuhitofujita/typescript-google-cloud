@@ -1,0 +1,64 @@
+# cloudbuild.yaml
+steps:
+  # 1. pnpm のインストール
+  - name: 'gcr.io/cloud-builders/npm' # npm イメージを使用しますが、pnpm をインストール
+    entrypoint: 'npm'
+    args: ['install', '-g', 'pnpm']
+    id: 'install pnpm'
+
+  # 2. 依存関係のインストール (pnpm install)
+  - name: 'gcr.io/cloud-builders/npm' # npm イメージを使用しますが、pnpm コマンドを実行
+    entrypoint: 'pnpm'
+    args: ['install', '--frozen-lockfile']
+    id: 'pnpm install'
+    env:
+      - 'NPM_CONFIG_GLOBALCONFIG=/usr/local/etc/npmrc' # pnpm のグローバル設定を一時的に指定
+
+  # 3. フロントエンドのビルド
+  - name: 'gcr.io/cloud-builders/npm'
+    entrypoint: 'pnpm'
+    args: ['--filter', 'frontend', 'build']
+    id: 'build frontend'
+
+  # 4. バックエンドのビルド
+  - name: 'gcr.io/cloud-builders/npm'
+    entrypoint: 'pnpm'
+    args: ['--filter', 'backend', 'build']
+    id: 'build backend'
+
+  # 5. Docker イメージのビルド
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'asia-northeast1-docker.pkg.dev/${PROJECT_ID}/super-duper-mart-repo/super-duper-mart-app:latest'
+      - '.' # Dockerfile がプロジェクトルートにあることを示します
+    id: 'build docker image'
+
+  # 6. Docker イメージを Artifact Registry にプッシュ
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'asia-northeast1-docker.pkg.dev/${PROJECT_ID}/super-duper-mart-repo/super-duper-mart-app:latest'
+    id: 'push docker image'
+
+  # 7. Cloud Run にデプロイ
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'deploy'
+      - 'super-duper-mart-service' # Cloud Run サービス名 (任意の名前)
+      - '--image'
+      - 'asia-northeast1-docker.pkg.dev/${PROJECT_ID}/super-duper-mart-repo/super-duper-mart-app:latest'
+      - '--region'
+      - 'asia-northeast1' # デプロイ先のリージョン (gcloud config set run/region と同じ)
+      - '--allow-unauthenticated' # 最初のデプロイ時は認証なしで公開 (IAPで制限するため)
+      - '--platform'
+      - 'managed'
+      - '--port'
+      - '8080'
+    id: 'deploy to cloud run'
+
+images:
+  - 'asia-northeast1-docker.pkg.dev/${PROJECT_ID}/super-duper-mart-repo/super-duper-mart-app:latest'
