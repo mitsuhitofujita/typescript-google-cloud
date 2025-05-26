@@ -1,0 +1,71 @@
+# This GitHub Actions workflow builds and deploys a web application to Google Cloud Run.
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+  ARTIFACT_REGISTORY_LOCATION: asia-northeast1
+  ARTIFACT_REGISTORY_REPOSITORY: super-duper-mart-repo
+  CLOUD_RUN_SERVICE_NAME: super-duper-mart-service
+  WEB_APP_ROOT: super-duper-mart
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        run: npm install -g pnpm@latest
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+        working-directory: ${{ env.WEB_APP_ROOT }}
+
+      - name: Build Frontend
+        run: pnpm --filter frontend build
+        working-directory: ${{ env.WEB_APP_ROOT }}
+
+      - name: Build Backend
+        run: pnpm --filter backend build
+        working-directory: ${{ env.WEB_APP_ROOT }}
+
+      - name: Authenticate to Google Cloud
+        id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.ACTIONS_DEPLOYER_CREDENTIALS }}'
+
+      - name: Set up Cloud SDK
+        uses: 'google-github-actions/setup-gcloud@v2'
+        with:
+          project_id: ${{ env.GOOGLE_CLOUD_PROJECT_ID }}
+
+      - name: Configure Docker to use Artifact Registry
+        run: gcloud auth configure-docker ${{ env.ARTIFACT_REGISTORY_LOCATION }}-docker.pkg.dev
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ env.ARTIFACT_REGISTORY_LOCATION }}-docker.pkg.dev/${{ env.GOOGLE_CLOUD_PROJECT_ID }}/${{ env.ARTIFACT_REGISTORY_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:latest .
+          docker push ${{ env.ARTIFACT_REGISTORY_LOCATION }}-docker.pkg.dev/${{ env.GOOGLE_CLOUD_PROJECT_ID }}/${{ env.ARTIFACT_REGISTORY_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:latest
+        working-directory: ${{ env.WEB_APP_ROOT }}
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ${{ env.CLOUD_RUN_SERVICE_NAME }} \
+            --image ${{ env.ARTIFACT_REGISTORY_LOCATION }}-docker.pkg.dev/${{ env.GOOGLE_CLOUD_PROJECT_ID }}/${{ env.ARTIFACT_REGISTORY_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:latest \
+            --region ${{ env.ARTIFACT_REGISTORY_LOCATION }} \
+            --allow-unauthenticated \
+            --platform managed \
+            --port 8080
