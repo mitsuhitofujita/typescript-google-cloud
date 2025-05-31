@@ -61,7 +61,13 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t ${{ env.ARTIFACT_REGISTORY_LOCATION }}-docker.pkg.dev/${{ env.GOOGLE_CLOUD_PROJECT_ID }}/${{ env.ARTIFACT_REGISTORY_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:latest .
+          docker build \
+            --build-arg GOOGLE_CLOUD_PROJECT_ID=${{ env.GOOGLE_CLOUD_PROJECT_ID }} \
+            --build-arg GOOGLE_CLIENT_ID=${{ env.GOOGLE_CLIENT_ID }} \
+            --build-arg GOOGLE_CLIENT_SECRET=${{ env.GOOGLE_CLIENT_SECRET }} \
+            --build-arg GOOGLE_REDIRECT_URI=${{ env.GOOGLE_REDIRECT_URI }} \
+            --build-arg JWT_SECRET=${{ env.JWT_SECRET }} \
+            -t ${{ env.ARTIFACT_REGISTORY_LOCATION }}-docker.pkg.dev/${{ env.GOOGLE_CLOUD_PROJECT_ID }}/${{ env.ARTIFACT_REGISTORY_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:latest .
           docker push ${{ env.ARTIFACT_REGISTORY_LOCATION }}-docker.pkg.dev/${{ env.GOOGLE_CLOUD_PROJECT_ID }}/${{ env.ARTIFACT_REGISTORY_REPOSITORY }}/${{ env.CLOUD_RUN_SERVICE_NAME }}:latest
         working-directory: ${{ env.WEB_APP_ROOT }}
 
