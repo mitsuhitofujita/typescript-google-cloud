@@ -5,7 +5,7 @@ import { useEffect } from "react";
 export default function HomeRedirect() {
   const navigate = useNavigate();
   useEffect(() => {
-    fetch("http://localhost:3000/api/auth/me", { credentials: "include" })
+    fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, { credentials: "include" })
       .then(res => res.json())
       .then(data => {
         if (data.authenticated) {

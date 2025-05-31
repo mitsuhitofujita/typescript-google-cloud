@@ -22,6 +22,7 @@ const firestore = new Firestore({
   projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
   keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
+
 const oAuth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -128,7 +129,6 @@ const start = async () => {
 		// 環境変数からポートを取得、設定されていなければ3000を使用
 		const port = Number.parseInt(process.env.PORT || "3000", 10);
 		await fastify.listen({ port: port, host: "0.0.0.0" }); // 0.0.0.0をリッスンすることで、コンテナ外部からのアクセスを許可
-		fastify.log.info(`Server listening on http://localhost:${port}`);
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);

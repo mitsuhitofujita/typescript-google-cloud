@@ -8,6 +8,10 @@ on:
 
 env:
   GOOGLE_CLOUD_PROJECT_ID: ${{ secrets.GOOGLE_CLOUD_PROJECT_ID }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
   ARTIFACT_REGISTORY_LOCATION: asia-northeast1
   ARTIFACT_REGISTORY_REPOSITORY: super-duper-mart-repo
   CLOUD_RUN_SERVICE_NAME: super-duper-mart-service
