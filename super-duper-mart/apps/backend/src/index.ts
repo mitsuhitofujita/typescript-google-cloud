@@ -20,7 +20,7 @@ fastify.register(fastifyJwt, { secret: process.env.JWT_SECRET as string });
 
 const firestore = new Firestore({
   projectId: process.env.GOOGLE_CLOUD_PROJECT_ID,
-  keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+  // keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
 });
 
 const oAuth2Client = new OAuth2Client(
