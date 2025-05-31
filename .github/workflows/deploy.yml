@@ -72,4 +72,5 @@ jobs:
             --region ${{ env.ARTIFACT_REGISTORY_LOCATION }} \
             --allow-unauthenticated \
             --platform managed \
-            --port 8080
+            --port 8080 \
+            --timeout 900
